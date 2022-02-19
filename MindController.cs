@@ -7,19 +7,40 @@ namespace Celli_Mind
 {
     public class MindController
     {
+        /// <summary>
+        /// Methods with MindController attribute
+        /// </summary>
         public List<MethodInfo> MethodInfos;
+
+        /// <summary>
+        /// Display controller to use
+        /// </summary>
         public DisplayController Display;
+
+        /// <summary>
+        /// Random controllerto use
+        /// </summary>
         public RandomController Random;
+
+        /// <summary>
+        /// Whether mind controller is running
+        /// </summary>
         private bool running = false;
         public MindController()
         {
+            // Find all methods with a MindController attribute and save them
             MethodInfos = typeof(MindController).GetMethods()
                 .Where(x => x.GetCustomAttribute<MindContextAttribute>() != null)
                 .ToList();
         }
+
+        /// <summary>
+        /// Start mind controller
+        /// </summary>
         public void Start()
         {
             running = true;
+
             new Thread(() =>
             {
                 Thread.CurrentThread.IsBackground = true;
@@ -34,16 +55,28 @@ namespace Celli_Mind
                 }
             }).Start();
         }
-        public void Send(MindContextTrigger trigger, object ctx = null)
+
+        /// <summary>
+        /// Send <paramref name="context"/> to all methods availabe for <paramref name="trigger"/>
+        /// </summary>
+        /// <param name="trigger"></param>
+        /// <param name="context"></param>
+        public void Send(MindContextTrigger trigger, object context = null)
         {
             foreach (var item in MethodInfos)
                 if (item.GetCustomAttribute<MindContextAttribute>().Trigger.HasFlag(trigger))
-                    item.Invoke(this, new object[] { ctx });
+                    item.Invoke(this, new object[] { context });
         }
+
+        /// <summary>
+        /// Stop mind controller
+        /// </summary>
         public void Stop()
         {
             running = false;
         }
+
+        #region Processing Triggers
 
         [MindContext(MindContextTrigger.Start)]
         public void Ctx_Start(object ctx)
@@ -55,13 +88,15 @@ namespace Celli_Mind
             Display.Animate(LanguageController.Statement.Greeting);
         }
 
+
         [MindContext(MindContextTrigger.Quit)]
         public void Ctx_Quit(object ctx)
         {
             Display.Emotion(DisplayEmotion.Sad);
             Display.Action("Quit", Color.Red, () => Environment.Exit(0));
-            Display.Animate(LanguageController.Confirmation.Quit);
+            Display.Animate(LanguageController.Question.Quit);
         }
+
 
         [MindContext(MindContextTrigger.Loop)]
         public void Ctx_Time(object ctx)
@@ -75,6 +110,7 @@ namespace Celli_Mind
             }
         }
 
+
         [MindContext(MindContextTrigger.Start)]
         public void Ctx_ScreenContext(object ctx)
         {
@@ -84,6 +120,7 @@ namespace Celli_Mind
 
                 while (true)
                 {
+                    // Screenshot screen, scan result and convert to text
                     Image img = PrintScreen.CaptureScreen();
                     OcrResult result = new IronTesseract().Read(img);
                     string text = result.Text;
@@ -93,6 +130,8 @@ namespace Celli_Mind
                 }
             }).Start();
         }
+
+        #endregion
     }
 
     [AttributeUsage(AttributeTargets.Method, Inherited = false, AllowMultiple = true)]

@@ -2,7 +2,14 @@
 {
     public static class LanguageController
     {
+        /// <summary>
+        /// Random used to determine an item
+        /// </summary>
         public static RandomController Random;
+
+        /// <summary>
+        /// Language type statement
+        /// </summary>
         public static class Statement
         {
             public static string Greeting => new string[]
@@ -14,6 +21,10 @@
                 $"Good {(DateTime.Now.ToString("tt") == "AM" ? "morning" : "evening")}"
             }.Random();
         }
+
+        /// <summary>
+        /// Language type response
+        /// </summary>
         public static class Response
         {
             public static string Time => new string[]
@@ -27,7 +38,11 @@
                 $"It is {DateTime.Now:D}"
             }.Random();
         }
-        public static class Confirmation
+
+        /// <summary>
+        /// Language type question
+        /// </summary>
+        public static class Question
         {
             public static string Quit => new string[]
             {
@@ -37,7 +52,13 @@
     }
     public static class LanguageControllerExtensions
     {
-        public static T Random<T>(this T[] arr)
-            => arr[LanguageController.Random.Number(arr.Length)];
+        /// <summary>
+        /// Picks random item from <paramref name="source"/>
+        /// </summary>
+        /// <typeparam name="T">Type of array</typeparam>
+        /// <param name="source">Source array</param>
+        /// <returns>A random item from <paramref name="source"/></returns>
+        public static T Random<T>(this T[] source)
+            => source[LanguageController.Random.Number(source.Length)];
     }
 }

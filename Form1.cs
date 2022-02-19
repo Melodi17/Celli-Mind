@@ -19,7 +19,7 @@ namespace Celli_Mind
 
         private void Form1_Load(object sender, EventArgs e)
         {
-
+            // Setup display controller
             display = new();
             display.Control = this;
             display.EmotionControl = Emotion_Label;
@@ -28,14 +28,19 @@ namespace Celli_Mind
             display.Timing = 15;
             display.Small();
 
+            // Setup random controller and language controller
             random = new();
             LanguageController.Random = random;
 
+            // Setup mind controller
             mind = new();
             mind.Display = display;
             mind.Random = random;
             mind.Start();
 
+            /* Position window in botom right corner of screen,
+             * using padding and accomodating for taskbar height
+             */
             int padding = 10;
             this.Location = new(Screen.PrimaryScreen.WorkingArea.Right - (padding + Width),
                 Screen.PrimaryScreen.WorkingArea.Bottom - (padding + Height));
@@ -55,6 +60,7 @@ namespace Celli_Mind
             // Prevent cancel
             e.Cancel = true;
 
+            // Send quit event to the mind controller
             mind.Send(MindContextTrigger.Quit);
         }
 
@@ -63,11 +69,13 @@ namespace Celli_Mind
 
         private void Output_Box_Click(object sender, EventArgs e)
         {
+            // Hide caret using P/Invoke
             HideCaret(Output_Box.Handle);
         }
 
         private void Output_Box_Validated(object sender, EventArgs e)
         {
+            // Hide caret using P/Invoke
             HideCaret(Output_Box.Handle);
         }
     }

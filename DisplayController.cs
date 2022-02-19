@@ -5,35 +5,86 @@ namespace Celli_Mind
 {
     public class DisplayController
     {
+        /// <summary>
+        /// Whether to inturrupt display
+        /// </summary>
         private bool interrupt = false;
+
+        /// <summary>
+        /// Control to use as "main"
+        /// </summary>
         public Control Control { get; set; }
+
+        /// <summary>
+        /// Control for displaying emotions
+        /// </summary>
         public Control EmotionControl { get; set; }
+
+        /// <summary>
+        /// Control for displaying actions
+        /// </summary>
         public Control ActionControl { get; set; }
+
+        /// <summary>
+        /// Control for displaying output
+        /// </summary>
         public RichTextBox OutputControl { get; set; }
-        public int Size { get; set; }
-        public int Width { get; set; }
+
+        /// <summary>
+        /// Timing to use for animation
+        /// </summary>
         public int Timing { get; set; }
+
+        /// <summary>
+        /// Whether the display is currently busy
+        /// </summary>
         public bool Busy => busy;
+
+        /// <summary>
+        /// Whether the display is currently busy
+        /// </summary>
         private bool busy = false;
 
-        private int offset = 0;
+        /// <summary>
+        /// Action to trigger on ActionControl raises click event
+        /// </summary>
         private Action currentAction;
+
+        /// <summary>
+        /// Asynchonous thread for button timeout
+        /// </summary>
         private Thread currentThread;
         public DisplayController()
         {
             Timing = 25;
-            Size = 15;
         }
+        
+        /// <summary>
+        /// Tnterrupt display
+        /// </summary>
+        /// <returns>This (for chaining)</returns>
         public DisplayController Interrupt()
         {
             interrupt = true;
             return this;
         }
+
+        /// <summary>
+        /// Animate <paramref name="text"/> to output
+        /// </summary>
+        /// <param name="text">Text to animate</param>
+        /// <returns>This (for chaining)</returns>
         public DisplayController Animate(string text)
         {
             AnimateInterrupt(text);
             return this;
         }
+
+        /// <summary>
+        /// Animate <paramref name="text"/> to output and handle interrupts
+        /// </summary>
+        /// <param name="text">Text to animate</param>
+        /// <returns>This (for chaining)</returns>
         private DisplayController AnimateInterrupt(string text)
         {
             busy = true;
@@ -58,6 +109,11 @@ namespace Celli_Mind
 
             return this;
         }
+
+        /// <summary>
+        /// Change main control size to small
+        /// </summary>
+        /// <returns>This (for chaining)</returns>
         public DisplayController Small()
         {
             Control.Invoke(new Action(() =>
@@ -68,6 +124,11 @@ namespace Celli_Mind
 
             return this;
         }
+
+        /// <summary>
+        /// Change main control size to large
+        /// </summary>
+        /// <returns>This (for chaining)</returns>
         public DisplayController Large()
         {
             Control.Invoke(new Action(() =>
@@ -78,6 +139,11 @@ namespace Celli_Mind
 
             return this;
         }
+
+        /// <summary>
+        /// Clear output text
+        /// </summary>
+        /// <returns>This (for chaining)</returns>
         public DisplayController Clear()
         {
             OutputControl.Invoke(() =>
@@ -87,6 +153,12 @@ namespace Celli_Mind
 
             return this;
         }
+
+        /// <summary>
+        /// Write <paramref name="text"/> to output
+        /// </summary>
+        /// <param name="text">Text to write</param>
+        /// <returns>This (for chaining)</returns>
         public DisplayController Write(string text)
         {
             OutputControl.Invoke(() =>
@@ -97,11 +169,27 @@ namespace Celli_Mind
 
             return this;
         }
+
+        /// <summary>
+        /// Wait for <paramref name="time"/> milliseconds before continuing thread
+        /// </summary>
+        /// <param name="time">Time to wait</param>
+        /// <returns>This (for chaining)</returns>
         public DisplayController Sleep(int time)
         {
             Thread.Sleep(time);
             return this;
         }
+
+        /// <summary>
+        /// Displays action button with <paramref name="text"/> in <paramref name="color"/>,
+        /// clicking will raise specified action, button will dissapear after <paramref name="timeout"/> milliseconds
+        /// </summary>
+        /// <param name="text">Button text</param>
+        /// <param name="color">Button text color</param>
+        /// <param name="action">Button click action</param>
+        /// <param name="timeout">Button display timeout</param>
+        /// <returns>This (for chaining)</returns>
         public DisplayController Action(string text, Color color, Action action, int timeout = 10000)
         {
             currentAction = action;
@@ -134,6 +222,11 @@ namespace Celli_Mind
 
             return this;
         }
+
+        /// <summary>
+        /// Remove action button
+        /// </summary>
+        /// <returns>This (for chaining)</returns>
         public DisplayController Action()
         {
             currentAction = null;
@@ -144,11 +237,24 @@ namespace Celli_Mind
 
             return this;
         }
+
+        /// <summary>
+        /// Action button click event raised
+        /// </summary>
+        /// <param name="sender">Disposed</param>
+        /// <param name="e">Disposed</param>
         private void ActionControl_Click(object? sender, EventArgs e)
         {
             ActionControl.Visible = false;
             currentAction?.Invoke();
         }
+
+        /// <summary>
+        /// Display emotion with <paramref name="text"/> in <paramref name="color"/>
+        /// </summary>
+        /// <param name="text">Text of emotion</param>
+        /// <param name="color">Color of emotion</param>
+        /// <returns>This (for chaining)</returns>
         public DisplayController Emotion(string text, Color color)
         {
             EmotionControl.Invoke(new Action(() =>
@@ -158,55 +264,41 @@ namespace Celli_Mind
                 EmotionControl.Visible = text.Length > 0;
             }));
 
-            offset = text.Length > 0 ? (EmotionControl?.Bottom ?? 0) : 0;
-
             return this;
         }
+
+        /// <summary>
+        /// Display emotion from <paramref name="emotion"/>
+        /// </summary>
+        /// <param name="emotion">Emotion to display</param>
+        /// <returns>This (for chaining)</returns>
         public DisplayController Emotion(DisplayEmotion emotion)
         {
             Emotion(emotion.Raw, emotion.Color);
             return this;
         }
+
+        /// <summary>
+        /// Clear emotion
+        /// </summary>
+        /// <returns>This (for chaining)</returns>
         public DisplayController Emotion()
         {
             Emotion("", Color.Black);
             return this;
         }
-        public static List<string> WrapText(string text, double pixels, Font font)
-        {
-            string[] originalLines = text.Split(new string[] { " " },
-                StringSplitOptions.None);
-
-            List<string> wrappedLines = new List<string>();
-
-            StringBuilder actualLine = new();
-            double actualWidth = 0;
-
-            foreach (var item in originalLines)
-            {
-                int w = TextRenderer.MeasureText(item + " ", font).Width / 2;
-                actualWidth += w;
-
-                if (actualWidth > pixels)
-                {
-                    wrappedLines.Add(actualLine.ToString());
-                    actualLine.Clear();
-                    actualWidth = w;
-                }
-
-                actualLine.Append(item + " ");
-            }
-
-            if (actualLine.Length > 0)
-                wrappedLines.Add(actualLine.ToString());
-
-            return wrappedLines;
-        }
     }
 
     public class DisplayEmotion
     {
+        /// <summary>
+        /// Text of emotion
+        /// </summary>
         public string Raw;
+
+        /// <summary>
+        /// Color of emotion
+        /// </summary>
         public Color Color;
         public DisplayEmotion(string raw, Color color)
         {
@@ -228,6 +320,10 @@ namespace Celli_Mind
             Normal = new("(• ◡ •)", Color.White);
         }
 
+        /// <summary>
+        /// Convert <paramref name="emotion"/> to text implicitly
+        /// </summary>
+        /// <param name="emotion">emotion to convert</param>
         public static implicit operator string(DisplayEmotion emotion) => emotion.Raw;
     }
 }
