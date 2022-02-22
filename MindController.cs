@@ -113,7 +113,7 @@ namespace Celli_Mind
 
         [MindContext(MindContextTrigger.Start)]
         public void Ctx_ScreenContext(object ctx)
-        {
+        { 
             new Thread(() =>
             {
                 Thread.CurrentThread.IsBackground = true;
